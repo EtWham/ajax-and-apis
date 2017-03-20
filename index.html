@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>AJAX and APIs</title>
+  <style type="text/css">
+    button,
+    div,
+    form,
+    input {
+      margin: 10px;
+    }
+  </style>
+<link rel="stylesheet" type="text/css" href="assets/css/style.css">
+</head>
+
+<body>
+
+  <div class="container">
+    <h1>Find your favorite football team!</h1>
+
+    <div id="teamButtons"></div>
+
+    <form id="team-form">
+      <label for="team-input">Add any Football team!</label>
+      <input type="text" id="team-input"><br>
+
+      <input id="add-team" type="submit" value="Add a team!">
+    </form>
+    <div id="teamView"></div>
+
+    <script src="http://code.jquery.com/jquery-2.1.3.min.js"></script>
+    <script type="text/javascript">
+
+      var topics = ["Arsenal", "Chelsea", "Manchester United", "Liverpool", "Barcelona", "Bayern Munich", "Real Madrid","Manchester City"];
+
+function renderButtons() {
+
+  $("#teamButtons").empty();
+  for (var i = 0; i < topics.length; i++) {
+    var newTeam = $("<button>");
+    newTeam.addClass("footballTeams");
+    newTeam.attr("data-team", topics[i]);
+    newTeam.attr("data-state", "still");
+    newTeam.text(topics[i]);
+    $("#teamButtons").append(newTeam);
+  }
+}
+
+  $("#add-team").on("click", function(event) {
+    event.preventDefault();
+    var team = $("#team-input").val().trim();
+      topics.push(team);
+      console.log(topics);
+      renderButtons();
+});
+
+renderButtons(); 
+//clicking on any of the buttons still only returns the results from position 0 of my array, no idea why.
+$(".footballTeams").on("click", function() {
+  var teams = $(".footballTeams").attr("data-team");
+  console.log(teams);
+  
+  var queryURL = "http://api.giphy.com/v1/gifs/search?q=" + teams + "&api_key=dc6zaTOxFJmzC&limit=10&tag=soccerplays";
+
+  $.ajax({
+    url: queryURL,
+    method: "GET"
+  })
+
+  .done(function(response) {
+
+    var teamGifs = response.data;
+//printing the ratings & still gifs of Arsenal, the first entry in my array worked but attempting to click others doesn't work. It still chooses Arsenal, the element in the 0 position in my array and I can't figure out why.    
+    for (var i = 0; i < teamGifs.length; i++) {
+      var teamGif = $("<img>");
+      teamGif.attr("src", teamGifs[i].images.fixed_height_still.url);
+      var gifRating = $("<div>");
+      var ratings = teamGifs[i].rating;
+      var rating = $("<p>").text("Rating: " + ratings);
+      $("#teamView").prepend(teamGif);
+      $("#teamView").prepend(rating);
+  }
+
+//Couldn't get this working properly, not sure how to access states of specific gifs.
+
+    // $(".footballTeams").on("click", function() {
+      
+    //   var state = $(this).attr("data-state");
+      
+    //   if (state === "still") {
+    //     var animate_url = $(this).attr("data-animate")
+    //     console.log(this);
+    //     $(this).attr("src", data.images.fixed_height);
+    //     $(this).attr("data-state", "animate");
+    //   } else {
+    //     var still_url = $(this).attr("data-still")
+    //     $(this).attr("src", data.images.fixed_height.url);
+    //     $(this).attr("data-state", "still");
+    //   }
+    // });
+  });
+});
+  </script>
+</body>
+
+</html>
+
